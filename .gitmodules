@@ -1,0 +1,3 @@
+[submodule "ESP-Sketch-Data-Upload"]
+	path = ESP-Sketch-Data-Upload
+	url = https://github.com/jackoske/ESP-Sketch-Data-Upload.git

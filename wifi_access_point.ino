@@ -1,78 +1,56 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <FS.h>
+#include <LittleFS.h>
+#include "wifi_access_point.h"
 
 ESP8266WebServer server(80);
 
-void listSPIFFSContents() {
-  Dir dir = SPIFFS.openDir("/");
-  while (dir.next()) {
-    Serial.print(dir.fileName());
-    Serial.print(" - ");
-    File f = dir.openFile("r");
-    Serial.println(f.size());
-    f.close();
-  }
-}
-
-// Event handler for Wi-Fi station connected
-void onWiFiStationConnected(const WiFiEventSoftAPModeStationConnected& evt) {
-  Serial.print("Station connected: ");
-  Serial.print("MAC: ");
-  Serial.print(evt.mac[0], HEX); Serial.print(":");
-  Serial.print(evt.mac[1], HEX); Serial.print(":");
-  Serial.print(evt.mac[2], HEX); Serial.print(":");
-  Serial.print(evt.mac[3], HEX); Serial.print(":");
-  Serial.print(evt.mac[4], HEX); Serial.print(":");
-  Serial.println(evt.mac[5], HEX);
-}
-
-// Event handler for Wi-Fi station disconnected
-void onWiFiStationDisconnected(const WiFiEventSoftAPModeStationDisconnected& evt) {
-  Serial.print("Station disconnected: ");
-  Serial.print("MAC: ");
-  Serial.print(evt.mac[0], HEX); Serial.print(":");
-  Serial.print(evt.mac[1], HEX); Serial.print(":");
-  Serial.print(evt.mac[2], HEX); Serial.print(":");
-  Serial.print(evt.mac[3], HEX); Serial.print(":");
-  Serial.print(evt.mac[4], HEX); Serial.print(":");
-  Serial.println(evt.mac[5], HEX);
-}
-
 void setup() {
   Serial.begin(115200);
-  WiFi.softAP("ESP_AP", "password");  // Set your AP credentials
+  WiFi.softAP("JACKS_AP", "password");  // Set your AP credentials
   IPAddress myIP = WiFi.softAPIP();
   Serial.print("AP IP address: ");
   Serial.println(myIP);
 
-  if (SPIFFS.begin()) {
-    Serial.println("SPIFFS started.");
-    listSPIFFSContents();
+  // Attempt to initialize LittleFS
+  if (LittleFS.begin()) {
+    Serial.println("LittleFS started.");
+    listFSContents(LittleFS); // Print the contents of LittleFS at startup
   } else {
-    Serial.println("SPIFFS failed to start.");
+    Serial.println("Failed to start LittleFS.");
     return;
   }
 
   // Register event handlers
-  WiFi.onSoftAPModeStationConnected(&onWiFiStationConnected);
-  WiFi.onSoftAPModeStationDisconnected(&onWiFiStationDisconnected);
+  WiFi.onSoftAPModeStationConnected(&printWiFiStationConnected);
+  WiFi.onSoftAPModeStationDisconnected(&printWiFiStationDisconnected);
 
+  // Serve index.html
   server.on("/", HTTP_GET, []() {
     Serial.println("HTTP GET /");
-    if (SPIFFS.exists("/index.html")) {
-      File file = SPIFFS.open("/index.html", "r");
+    if (LittleFS.exists("/index.html")) {
+      File file = LittleFS.open("/index.html", "r");
+      if(!file){
+        Serial.println("Failed to open html file for reading");
+        return;
+      }
+      Serial.println("File Content:");
+      while(file.available()){
+        Serial.write(file.read());
+      }
       server.streamFile(file, "text/html");
       file.close();
     } else {
-      server.send(404, "text/plain", "File not found");
+      server.send(404, "text/plain", "HTML File not found");
     }
   });
 
-  server.on("/css/styles.css", HTTP_GET, []() {
-    Serial.println("HTTP GET /css/styles.css");
-    if (SPIFFS.exists("/css/styles.css")) {
-      File file = SPIFFS.open("/css/styles.css", "r");
+  // Serve CSS file
+  server.on("/css/style.css", HTTP_GET, []() {
+    Serial.println("HTTP GET /css/style.css");
+    if (LittleFS.exists("/css/style.css")) {
+      File file = LittleFS.open("/css/style.css", "r");
       server.streamFile(file, "text/css");
       file.close();
     } else {
@@ -80,10 +58,11 @@ void setup() {
     }
   });
 
+  // Serve JavaScript file
   server.on("/js/script.js", HTTP_GET, []() {
     Serial.println("HTTP GET /js/script.js");
-    if (SPIFFS.exists("/js/script.js")) {
-      File file = SPIFFS.open("/js/script.js", "r");
+    if (LittleFS.exists("/js/script.js")) {
+      File file = LittleFS.open("/js/script.js", "r");
       server.streamFile(file, "application/javascript");
       file.close();
     } else {
@@ -91,9 +70,17 @@ void setup() {
     }
   });
 
+  // Serve LittleFS contents
+  server.on("/list", HTTP_GET, []() {
+    Serial.println("HTTP GET /list");
+    server.send(200, "text/plain", "Listing LittleFS contents...");
+    listFSContents(LittleFS);
+  });
+
   server.begin();
   Serial.println("HTTP server started");
 }
+
 
 void loop() {
   server.handleClient();
