@@ -14,12 +14,17 @@ Files are added to SPIFFS storage using the script available at [ESP Sketch Data
 
 To Do:
 
-- [ ] fix webpage not being served
+- [x] fix webpage not being served
+ - [X] fix css and js
+
+
+- [x] Try to print the spiffs file system to the serial monitor
+ - done with littfs 
 
 - [ ] Add a way to turn off password protection
 
-- [ ] Try to print the spiffs file system to the serial monitor
+- [ ] mac addresses not being printed, (meh dunno if I need maybe later I will fix!)
 
-- [ ] mac addresses not being printed
+- [ ] Refactor more!
 
 

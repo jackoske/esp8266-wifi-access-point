@@ -1,6 +1,6 @@
 // In web_server.cpp
 #include "web_server.h"
-#include "wifi_access_point.h"
+#include "server_utils.h"
 
 ESP8266WebServer server(80);
 
@@ -13,10 +13,12 @@ void handleRoot() {
       return;
     }
     Serial.println("File Content:");
+    String htmlContent;
     while (file.available()) {
-      Serial.write(file.read());
+      htmlContent += (char)file.read();
     }
-    server.streamFile(file, "text/html");
+    Serial.print(htmlContent);
+    server.send(200, "text/html", htmlContent);
     file.close();
   } else {
     server.send(404, "text/plain", "HTML File not found");
@@ -25,9 +27,9 @@ void handleRoot() {
 }
 
 void handleCss() {
-  Serial.println("HTTP GET /css/style.css");
-  if (LittleFS.exists("/css/style.css")) {
-    File file = LittleFS.open("/css/style.css", "r");
+  Serial.println("HTTP GET /css/styles.css");
+  if (LittleFS.exists("/css/styles.css")) {
+    File file = LittleFS.open("/css/styles.css", "r");
     server.streamFile(file, "text/css");
     file.close();
   } else {
@@ -57,7 +59,7 @@ void handleList() {
 void setupWebServer() {
   // Register handlers for root, CSS, JS, and listing
   server.on("/", HTTP_GET, handleRoot);
-  server.on("/css/style.css", HTTP_GET, handleCss);
+  server.on("/css/styles.css", HTTP_GET, handleCss);
   server.on("/js/script.js", HTTP_GET, handleJs);
   server.on("/list", HTTP_GET, handleList);
 
