@@ -4,6 +4,7 @@
 
 ESP8266WebServer server(80);
 
+
 void handleRoot() {
   Serial.println("HTTP GET /");
   if (LittleFS.exists("/index.html")) {
@@ -62,6 +63,14 @@ void setupWebServer() {
   server.on("/css/styles.css", HTTP_GET, handleCss);
   server.on("/js/script.js", HTTP_GET, handleJs);
   server.on("/list", HTTP_GET, handleList);
+  server.onNotFound([]() {
+    handleRoot();
+  });
+  // Add this line to handle the /generate_204 route
+  // fakes internet connectivity for some devices
+  server.on("/generate_204", HTTP_GET, []() {
+    server.send(204, "text/html", "");
+  });
 
   server.begin();
   Serial.println("HTTP server started");
