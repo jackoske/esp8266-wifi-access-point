@@ -9,7 +9,7 @@ and respective flash filesystems I could actually get working!
 The file structure for this project is as follows:
 
 
-
+```
 ── esp32
 │   └── wifi_access_point
 │       ├── data
@@ -39,3 +39,5 @@ The file structure for this project is as follows:
 │       ├── web_server.h
 │       └── wifi_access_point.ino
 └── README.md
+
+```
