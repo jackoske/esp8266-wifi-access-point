@@ -1,6 +1,6 @@
 // In wifi_access_point.ino
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
+#include <WiFi.h>
 #include <LittleFS.h>
 #include <DNSServer.h>
 #include "server_utils.h"

@@ -1,76 +1,41 @@
-# ESP8266-WebServer
-=================
 
-## Work in progress
+# Starter Web Captive Portal / Server for ESP32 and ESP8266
 
-This project uses the ESP8266WebServer library to serve a webpage from the ESP8266. It also uses the SPIFFS filesystem to store the webpage files.
+This repository contains the necessary files and documentation to set up a starter web captive portal/server for both ESP32 and ESP8266 using the Arduino IDE.
+and respective flash filesystems I could actually get working!
 
-The server is set up to serve three types of files: HTML, CSS, and JavaScript. If a requested file is not found, it will return a 404 error.
+## File Structure
 
-The ESP8266 is set up as a soft AP, and it prints the IP address it is using to the serial monitor. It also prints a message to the serial monitor when a Wi-Fi station connects or disconnects, including the MAC address of the station.
-
-The SPIFFS filesystem is initialized in the setup function, and its contents are printed to the serial monitor.
-Files are added to SPIFFS storage using the script available at
- [ESP Sketch Data Upload](https://github.com/jackoske/ESP-Sketch-Data-Upload).
-or probably better is this as its not made by me:
-[arduino-littlefs-upload](https://github.com/earlephilhower/arduino-littlefs-upload)
-
-To Do:
-
-- [x] fix webpage not being served
-    - [X] fix css and js
+The file structure for this project is as follows:
 
 
-- [x] Try to print the spiffs file system to the serial monitor
-    - [X] done with littfs 
 
-- [ ] mac addresses not being printed, (meh dunno if I need maybe later I will fix!)
-
-- [x] Add a way to turn off password protection (fix dns redirection first)
-```
-WiFi.softAP("YourNetworkName", ""); (no password)
-
-```
-
-  - [x] Implement DNS server to always redirect to the ESP8266 IP (192.168.4.1)
-  issue of IP not working when connected to the network and no wifi see below (setup captive portal)
-  Now works as a login but still doesnt redirect https requests!
-    (something like below)
-    ```
-    #include <DNSServer.h>
-
-    const byte DNS_PORT = 53;
-    DNSServer dnsServer;
-
-    void setup() {
-      // ... your existing setup code ...
-
-      // Start the DNS server
-      dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
-    }
-
-    void loop() {
-      // ... your existing loop code ...
-
-      // Process DNS requests
-      dnsServer.processNextRequest();
-    }
-
-    ```
-
-
-    ```
-    When you connect your phone to the WiFi network created by the ESP8266, your phone is likely still using its mobile data for internet access because the WiFi network does not have internet access. This is a feature called "Smart Network Switch" or "Auto Network Switch" on some phones, designed to maintain a stable internet connection.
-
-    When you try to access the ESP8266's IP address while your phone's mobile data is on, your phone tries to access that IP address over the internet, not over the WiFi network, and fails because that IP address does not exist on the internet.
-
-    When you turn off your phone's mobile data, your phone has no choice but to use the WiFi network for all requests, including accessing the ESP8266's IP address. That's why it works when mobile data is off.
-
-    To fix this, you can:
-
-    1. Turn off "Smart Network Switch" or "Auto Network Switch" on your phone.
-    2. Implement a captive portal on the ESP8266, as mentioned earlier. A captive portal can force a device to use the WiFi network for all requests, even if the device has other internet connections available.
-    ```
-- [ ] SSL support for https request redirection?? 
-
-- [ ] Refactor more!
+── esp32
+│   └── wifi_access_point
+│       ├── data
+│       │   ├── css
+│       │   │   └── styles.css
+│       │   ├── index.html
+│       │   └── js
+│       │       └── script.js
+│       ├── README.md
+│       ├── server_utils.cpp
+│       ├── server_utils.h
+│       ├── web_server.cpp
+│       ├── web_server.h
+│       └── wifi_access_point.ino
+├── esp8266
+│   └── wifi_access_point
+│       ├── data
+│       │   ├── css
+│       │   │   └── styles.css
+│       │   ├── index.html
+│       │   └── js
+│       │       └── script.js
+│       ├── README.md
+│       ├── server_utils.cpp
+│       ├── server_utils.h
+│       ├── web_server.cpp
+│       ├── web_server.h
+│       └── wifi_access_point.ino
+└── README.md
